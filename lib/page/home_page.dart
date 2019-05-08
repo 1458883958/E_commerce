@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:e_commerce/header/http_header.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -15,7 +16,7 @@ class _HomePageState extends State<HomePage> {
     return Container(
       child: Scaffold(
         appBar: AppBar(
-          title: Text('post小案例'),
+          title: Text('伪造请求头获取极客时间的数据'),
         ),
         body: SingleChildScrollView(
           child: Column(
@@ -49,6 +50,16 @@ class _HomePageState extends State<HomePage> {
                 },
                 child: Text('点击获取服务'),
               ),
+              RaisedButton(
+                onPressed: () {
+                  _headerHttp().then((val) {
+                    setState(() {
+                      showToast = val.toString();
+                    });
+                  });
+                },
+                child: Text('获取极客时间数据'),
+              ),
               Center(
                 child: Text(
                   showToast,
@@ -60,6 +71,20 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  Future _headerHttp() async {
+    print('开始获取...........');
+    try {
+      Dio dio = Dio();
+      dio.options.headers = header;
+      Response response =
+          await dio.post('https://time.geekbang.org/serv/v1/column/newAll');
+      print(response.data.toString());
+      return response.data;
+    } catch (e) {
+      return print(e.toString());
+    }
   }
 
   Future _postHttp(String name) async {
