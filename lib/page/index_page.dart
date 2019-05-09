@@ -4,6 +4,8 @@ import 'home_page.dart';
 import 'assort_page.dart';
 import 'cart_page.dart';
 import 'plus_page.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 
 class IndexPage extends StatefulWidget {
   @override
@@ -54,6 +56,10 @@ class _IndexPageState extends State<IndexPage> {
 
   @override
   Widget build(BuildContext context) {
+    ScreenUtil.instance = ScreenUtil(width: 750, height: 1334)..init(context);
+    print('像素密度:${ScreenUtil.pixelRatio}');
+    print('设备高:${ScreenUtil.screenHeight}');
+    print('设备宽:${ScreenUtil.screenWidth}');
     return Scaffold(
       // 设置当前页面的主体
       body: _currentPage,
