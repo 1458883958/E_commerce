@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../service/service_method.dart';
+import 'dart:convert';
+import 'package:flutter_swiper/flutter_swiper.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -7,18 +9,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String showStr = '正在获取数据';
-
-  @override
-  void initState() {
-    getHomePageContent().then((value) {
-      setState(() {
-        showStr = value.toString();
-      });
-    });
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -26,11 +16,53 @@ class _HomePageState extends State<HomePage> {
         appBar: AppBar(
           title: Text('获取首页数据'),
         ),
-        body: SingleChildScrollView(
-          child: Text(
-            showStr,
-          ),
+        body: FutureBuilder(
+          future: getHomePageContent(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              var data = jsonDecode(snapshot.data.toString());
+              List<Map> carousel = (data['data']['slides'] as List).cast();
+              return Column(children: <Widget>[
+                Carousel(
+                  carouselData: carousel,
+                ),
+              ]);
+            } else {
+              return Center(
+                child: Text('暂无数据'),
+              );
+            }
+          },
         ),
+      ),
+    );
+  }
+}
+
+/*
+*  首页轮播
+*
+*/
+class Carousel extends StatelessWidget {
+  // 轮播数据
+  final List carouselData;
+
+  Carousel({Key key, this.carouselData}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 200,
+      child: Swiper(
+        itemCount: carouselData.length,
+        itemBuilder: (context, index) {
+          return Image.network(
+            carouselData[index]['image'],
+            fit: BoxFit.fill,
+          );
+        },
+        pagination: SwiperPagination(), // 小圆点
+        autoplay: true,
       ),
     );
   }
