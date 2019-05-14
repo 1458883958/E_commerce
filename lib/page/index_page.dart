@@ -57,12 +57,15 @@ class _IndexPageState extends State<IndexPage> {
   @override
   Widget build(BuildContext context) {
     ScreenUtil.instance = ScreenUtil(width: 750, height: 1334)..init(context);
-    print('像素密度:${ScreenUtil.pixelRatio}');
-    print('设备高:${ScreenUtil.screenHeight}');
-    print('设备宽:${ScreenUtil.screenWidth}');
+//    print('像素密度:${ScreenUtil.pixelRatio}');
+//    print('设备高:${ScreenUtil.screenHeight}');
+//    print('设备宽:${ScreenUtil.screenWidth}');
     return Scaffold(
       // 设置当前页面的主体
-      body: _currentPage,
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         // 固定位置，3个以上itemBar禁止动画
         type: BottomNavigationBarType.fixed,

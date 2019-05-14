@@ -11,8 +11,10 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>
+    with AutomaticKeepAliveClientMixin {
   @override
+  // ignore: must_call_super
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
@@ -27,34 +29,73 @@ class _HomePageState extends State<HomePage> {
               var map = data['data'];
               List<Map> carousel = (map['slides'] as List).cast();
               List<Map> navigator = (map['category'] as List).cast();
+              List<Map> recommend = (map['recommend'] as List).cast();
               String bannerUrl = map['advertesPicture']['PICTURE_ADDRESS'];
               var shopInfo = map['shopInfo'];
-              return Column(children: <Widget>[
-                Carousel(
-                  carouselData: carousel,
-                ), // 轮播
-                Container(
-                  color: Color.fromARGB(255, 239, 239, 239),
-                  height: ScreenUtil.getInstance().setHeight(12),
-                ), // 分割线
-                TopNavigator(
-                  navigatorData: navigator,
-                ), // 顶部导航
-                Container(
-                  color: Color.fromARGB(255, 239, 239, 239),
-                  height: ScreenUtil.getInstance().setHeight(12),
+              List preferential = [
+                map['integralMallPic']['PICTURE_ADDRESS'],
+                map['saoma']['PICTURE_ADDRESS'],
+                map['newUser']['PICTURE_ADDRESS']
+              ];
+              return SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: Column(
+                  children: <Widget>[
+                    Carousel(
+                      carouselData: carousel,
+                    ), // 轮播
+                    Container(
+                      color: Color.fromARGB(255, 239, 239, 239),
+                      height: ScreenUtil.getInstance().setHeight(12),
+                    ), // 分割线
+                    TopNavigator(
+                      navigatorData: navigator,
+                    ), // 顶部导航
+                    Container(
+                      color: Color.fromARGB(255, 239, 239, 239),
+                      height: ScreenUtil.getInstance().setHeight(12),
+                    ),
+                    AdBanner(
+                      bannerUrl: bannerUrl,
+                    ), // 广告
+                    OnTouchCall(
+                      shopInfo: shopInfo,
+                    ), // 一键拨打电话
+                    Container(
+                      color: Color.fromARGB(255, 239, 239, 239),
+                      height: ScreenUtil.getInstance().setHeight(12),
+                    ),
+                    Preferential(
+                      preferential: preferential,
+                    ),
+                    Container(
+                      color: Color.fromARGB(255, 239, 239, 239),
+                      height: ScreenUtil.getInstance().setHeight(16),
+                    ),
+                    Recommend(
+                      recommendList: recommend,
+                    ), // 商品推荐
+                    FloorTitle(
+                      titleUrl: map['floor1Pic']['PICTURE_ADDRESS'],
+                    ), // 楼层
+                    FloorContent(
+                      goods: map['floor1'],
+                    ),
+                    FloorTitle(
+                      titleUrl: map['floor2Pic']['PICTURE_ADDRESS'],
+                    ),
+                    FloorContent(
+                      goods: map['floor2'],
+                    ),
+                    FloorTitle(
+                      titleUrl: map['floor3Pic']['PICTURE_ADDRESS'],
+                    ),
+                    FloorContent(
+                      goods: map['floor3'],
+                    ),
+                  ],
                 ),
-                AdBanner(
-                  bannerUrl: bannerUrl,
-                ),
-                OnTouchCall(
-                  shopInfo: shopInfo,
-                ),
-                Container(
-                  color: Color.fromARGB(255, 239, 239, 239),
-                  height: ScreenUtil.getInstance().setHeight(12),
-                ),
-              ]);
+              );
             } else {
               return Center(
                 child: Text('暂无数据'),
@@ -65,6 +106,9 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 /*
@@ -242,5 +286,200 @@ class OnTouchCall extends StatelessWidget {
     } else {
       throw 'Could not launch $url';
     }
+  }
+}
+
+/*
+*  限时优惠
+*
+*/
+class Preferential extends StatelessWidget {
+  final List preferential;
+
+  const Preferential({Key key, this.preferential}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: GridView.count(
+        shrinkWrap: true,
+        crossAxisCount: 3,
+        children: List.generate(
+            preferential.length,
+            (index) => Image.network(
+                  preferential[index],
+                  fit: BoxFit.fill,
+                )),
+      ),
+    );
+  }
+}
+
+/*
+*  商品推荐
+*
+*/
+class Recommend extends StatelessWidget {
+  final List recommendList;
+
+  const Recommend({Key key, this.recommendList}) : super(key: key);
+
+  // 标题
+  Widget _title() {
+    return Container(
+      alignment: Alignment.centerLeft,
+      child: Text('商品推荐', style: TextStyle(color: Colors.pink)),
+      padding: EdgeInsets.fromLTRB(10.0, 5.0, 0, 5.0),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(
+              bottom: BorderSide(
+            color: Colors.black12,
+            width: 1,
+          ))),
+    );
+  }
+
+  // 推荐商品单独的项
+  Widget _item(index) {
+    return InkWell(
+      child: Container(
+        child: Column(
+          children: <Widget>[
+            Image.network(recommendList[index]['image']),
+            Text('￥${recommendList[index]['mallPrice']}'),
+            Text('￥${recommendList[index]['price']}',
+                style: TextStyle(
+                    decoration: TextDecoration.lineThrough,
+                    color: Colors.grey)),
+          ],
+        ),
+        padding: EdgeInsets.all(8.0),
+        width: ScreenUtil.getInstance().setWidth(250),
+        decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border(
+                right: BorderSide(
+              color: Colors.black12,
+              width: 1,
+            ))),
+      ),
+      onTap: () {
+        print('跳转');
+      },
+    );
+  }
+
+  // 横向列表
+  Widget _list() {
+    return Container(
+      height: ScreenUtil.getInstance().setHeight(330),
+      child: ListView.builder(
+        shrinkWrap: true,
+        itemCount: recommendList.length,
+        itemBuilder: (context, index) {
+          return _item(index);
+        },
+        scrollDirection: Axis.horizontal,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Column(
+        children: <Widget>[
+          _title(),
+          _list(),
+        ],
+      ),
+    );
+  }
+}
+
+/*
+*  楼层标题组件
+*
+*/
+class FloorTitle extends StatelessWidget {
+  final String titleUrl;
+
+  const FloorTitle({Key key, this.titleUrl}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(8.0),
+      child: Image.network(
+        titleUrl,
+        fit: BoxFit.fill,
+      ),
+    );
+  }
+}
+
+/*
+*  楼层内容组件
+*
+*/
+class FloorContent extends StatelessWidget {
+  final List goods;
+
+  const FloorContent({Key key, this.goods}) : super(key: key);
+
+  // 第一项
+  Widget _firstItem(Map good) {
+    return Container(
+      width: ScreenUtil.getInstance().setWidth(375),
+      child: InkWell(
+        onTap: () {
+          print('点击了${good['goodsId']}');
+        },
+        child: Container(
+          child: Image.network(
+            good['image'],
+            fit: BoxFit.fill,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 第一行
+  Widget _head() {
+    return Row(
+      children: <Widget>[
+        _firstItem(goods[0]),
+        Column(
+          children: <Widget>[
+            _firstItem(goods[1]),
+            _firstItem(goods[2]),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // 最后一行
+  Widget _end() {
+    return Row(
+      children: <Widget>[
+        _firstItem(goods[3]),
+        _firstItem(goods[4]),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Column(
+        children: <Widget>[
+          _head(),
+          _end(),
+        ],
+      ),
+    );
   }
 }
